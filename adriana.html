@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda de Camisetas Estampadas</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Estilos para la ventana emergente */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow: auto;
+            padding-top: 100px;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            text-align: center;
+            border-radius: 10px;
+            color: green;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal p {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        /* Estilos para el carrusel */
+        .carousel {
+            position: relative;
+            max-width: 100%;
+            margin: auto;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .carousel img {
+            width: 100%;
+            display: none;
+            transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+            border-radius: 15px;
+        }
+
+        .carousel img.active {
+            display: block;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .carousel .arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            font-size: 1.5em;
+            padding: 0.5em;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .carousel .arrow.left {
+            left: 10px;
+        }
+
+        .carousel .arrow.right {
+            right: 10px;
+        }
+
+        .carousel .arrow:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        /* Estilos generales */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fff;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-image: linear-gradient(45deg, #d4af37 25%, transparent 25%), linear-gradient(-45deg, #d4af37 25%, transparent 25%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            background-repeat: repeat;
+        }
+
+        header {
+            background-color: #333;
+            color: gold;
+            padding: 1.5em;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2em;
+        }
+
+        .productos, .formulario {
+            margin: 2em 0;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        .productos h2, .formulario h2 {
+            margin-bottom: 1em;
+        }
+
+        .camiseta {
+            background-color: #000;
+            color: white;
+            padding: 1em;
+            margin-bottom: 1em;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        /* Estilos para el formulario */
+        form label {
+            display: block;
+            margin: 0.5em 0 0.2em;
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #000;
+            text-transform: uppercase;
+        }
+
+        form input:focus, form select:focus, form textarea:focus {
+            border-color: #d4af37;
+            outline: none;
+        }
+
+        form input, form select, form button {
+            width: 100%;
+            padding: 0.5em;
+            margin-bottom: 1em;
+        }
+
+        form button {
+            background-color: #000;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Estilo del footer */
+        footer {
+            margin-top: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column; /* Asegura que cada contacto esté en un renglón */
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            background-color: #000; /* Fondo negro */
+            color: white;
+        }
+
+        footer img {
+            width: 30px; /* Tamaño pequeño del logo */
+            vertical-align: middle;
+            margin-right: 10px; /* Espacio entre el logo y el número */
+        }
+
+        footer .whatsapp-contact {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px; /* Separar los contactos */
+        }
+
+        footer .whatsapp-contact a {
+            text-decoration: none;
+            color: white; /* Texto blanco */
+            font-size: 1.1em;
+        }
+
+        footer .whatsapp-contact a:hover {
+            color: #d4af37; /* Cambiar color cuando se pasa el mouse */
+        }
+
+    </style>
+    <script>
+        let currentSlide = 0;
+
+        function showSlide(index) {
+            const slides = document.querySelectorAll(".carousel img");
+            const totalSlides = slides.length;
+
+            if (index >= totalSlides) {
+                currentSlide = 0;
+            } else if (index < 0) {
+                currentSlide = totalSlides - 1;
+            } else {
+                currentSlide = index;
+            }
+
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[currentSlide].classList.add('active');
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+
+        function prevSlide() {
+            showSlide(currentSlide - 1);
+        }
+
+        window.onload = function() {
+            showSlide(currentSlide);
+            setInterval(() => {
+                showSlide(currentSlide + 1);
+            }, 2500);
+        };
+
+        function mostrarMensaje(event) {
+            // Prevenir el envío del formulario
+            event.preventDefault();
+            // Mostrar el modal
+            document.getElementById("miModal").style.display = "block";
+            // Enviar el formulario inmediatamente después de mostrar el modal
+            document.getElementById("pedidoForm").submit();
+        }
+
+        function cerrarModal() {
+            // Cerrar el modal
+            document.getElementById("miModal").style.display = "none";
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Tienda de Camisetas Estampadas</h1>
+        <p>Encuentra camisetas con estampados de 1, 2 o 3 colores</p>
+
+        <div class="carousel">
+            <img src="https://i.ibb.co/qpq12Hc/IMG-20241117-WA0040.jpg" alt="Camiseta 1" class="active">
+            <img src="https://i.ibb.co/k6pfcnf/IMG-20241117-WA0041.jpg" alt="Camiseta 2">
+            <img src="https://i.ibb.co/4PMsD9n/IMG-20241117-WA0035.jpg" alt="Camiseta 3">
+            <img src="https://i.ibb.co/hdprRGc/IMG-20241117-WA0037.jpg" alt="Camiseta 4">
+            <img src="https://i.ibb.co/N1BqPyR/IMG-20241117-WA0033.jpg" alt="Camiseta 5">
+            <div class="arrow left" onclick="prevSlide()">&#10094;</div>
+            <div class="arrow right" onclick="nextSlide()">&#10095;</div>
+        </div>
+    </header>
+
+    <section class="productos">
+        <h2>Productos</h2>
+        <div class="camiseta">
+            <h3>Camiseta Estampada de 1 Color</h3>
+            <p>Precio: $10.00</p>
+        </div>
+        <div class="camiseta">
+            <h3>Camiseta Estampada de 2 Colores</h3>
+            <p>Precio: $15.00</p>
+        </div>
+        <div class="camiseta">
+            <h3>Camiseta Estampada de 3 Colores</h3>
+            <p>Precio: $20.00</p>
+        </div>
+    </section>
+
+    <section class="formulario">
+        <h2>Realiza tu pedido</h2>
+        <form id="pedidoForm" action="https://formspree.io/f/xvgorbja" method="POST" onsubmit="mostrarMensaje(event)">
+            <fieldset>
+                <legend>Información del Pedido</legend>
+
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" required placeholder="Ingresa tu nombre">
+
+                <label for="color">Número de Colores:</label>
+                <select id="color" name="color" required>
+                    <option value="1">1 Color</option>
+                    <option value="2">2 Colores</option>
+                    <option value="3">3 Colores</option>
+                </select>
+
+                <label for="telefono">Número de Teléfono (Argentina):</label>
+                <input type="tel" id="telefono" name="telefono" required pattern="\d{10}" placeholder="Ingrese su número de teléfono">
+
+                <label for="cantidad">Cantidad:</label>
+                <input type="number" id="cantidad" name="cantidad" required min="1" value="1">
+
+                <label for="direccion">Dirección de Envío:</label>
+                <textarea id="direccion" name="direccion" required placeholder="Ingresa tu dirección"></textarea>
+
+                <button type="submit">Realizar pedido</button>
+            </fieldset>
+        </form>
+    </section>
+
+    <!-- Modal de confirmación -->
+    <div id="miModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="cerrarModal()">&times;</span>
+            <p>Pedido realizado con éxito</p>
+        </div>
+    </div>
+
+    <!-- Footer con contacto de WhatsApp -->
+    <footer>
+        <div class="whatsapp-contact">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="Logo WhatsApp">
+            <a href="https://wa.me/5491154943154" target="_blank">+54 9 11 5494-3154</a>
+        </div>
+        <div class="whatsapp-contact">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="Logo WhatsApp">
+            <a href="https://wa.me/5491124710151" target="_blank">+54 9 11 2471-0151</a>
+        </div>
+    </footer>
+</body>
+</html>
